@@ -5,6 +5,7 @@
 import numpy as np, pandas as pd
 import sys
 
+# MODELO SOCIAL
 class MS_CienagaRioLaVieja():
     def __init__(self, init_year, end_year):
         self.init_year = init_year
@@ -44,19 +45,19 @@ class MS_CienagaRioLaVieja():
         Pru_IDR = self.dict['Migracion rural atraida']
         Pcb_IDU = self.dict['Migracion cabecera atraida']
         
-        T_CulTr        = self.dict['Tasa de cambio del cultivo - Transitorio']
+        T_CulTr   = self.dict['Tasa de cambio del cultivo - Transitorio']
         Tend_AreaCulTr = self.dict['Area tendencial del cultivo - Transitorio']
-        T_CulPr        = self.dict['Tasa de cambio del cultivo - Permanente']
+        T_CulPr   = self.dict['Tasa de cambio del cultivo - Permanente']
         Tend_AreaCulPr = self.dict['Area tendencial del cultivo - Permanente']
-        T_CulHt        = self.dict['Tasa de cambio del cultivo - Heterogeneo']
+        T_CulHt   = self.dict['Tasa de cambio del cultivo - Heterogeneo']
         Tend_AreaCulHt = self.dict['Area tendencial del cultivo - Heterogeneo']
         
-        T_cafe       = self.dict['Tasa de cambio del cultivo de cafe']
+        T_cafe = self.dict['Tasa de cambio del cultivo de cafe']
         Tend_AreaCaf = self.dict['Area tendencial del cultivo de cafe']
         
-        Soporte    = self.dict['Ganado soportado por una ha de pasto']
-        T_crec     = self.dict['Tasa de crecimiento natural del ganado bovino']
-        T_sacrif   = self.dict['Tasa de sacrificio del ganado bovino']
+        Soporte = self.dict['Ganado soportado por una ha de pasto']
+        T_crec  = self.dict['Tasa de crecimiento natural del ganado bovino']
+        T_sacrif = self.dict['Tasa de sacrificio del ganado bovino']
         Requerimie = self.dict['Ha de pasto requerido por el ganado']
         
         T_cnat_rul = self.dict['Tasa de crecimiento natural - Población rural']
@@ -65,33 +66,33 @@ class MS_CienagaRioLaVieja():
         # Run model
         Cul_ini_ha = Cul_tra_ini_ha + Cul_per_ini_ha + Cul_het_ini_ha
         
-        ano        = [self.init_year]
-        Pas_lts    = [Pas_ini_ha]
+        ano = [self.init_year]
+        Pas_lts = [Pas_ini_ha]
         
-        Ctr_lts    = [Cul_tra_ini_ha]
-        Cpr_lts    = [Cul_per_ini_ha]
-        Cht_lts    = [Cul_het_ini_ha]
+        Ctr_lts = [Cul_tra_ini_ha]
+        Cpr_lts = [Cul_per_ini_ha]
+        Cht_lts = [Cul_het_ini_ha]
         
-        Cul_lts    = [Cul_ini_ha]
-        Caf_lts    = [Caf_ini_ha]
-        Gan_lts    = [Gan_ini_cb]
+        Cul_lts = [Cul_ini_ha]
+        Caf_lts = [Caf_ini_ha]
+        Gan_lts = [Gan_ini_cb]
         
-        Pru_lts    = [Pob_ini_ru]
-        Pca_lts    = [Pob_ini_cb]
+        Pru_lts = [Pob_ini_ru]
+        Pca_lts = [Pob_ini_cb]
         
-        tur_lts    = [tur_HaC * Caf_ini_ha]
+        tur_lts = [tur_HaC * Caf_ini_ha]
         PDES_lts   = [np.nan]
         
         for year in np.arange(self.init_year + 1 , self.end_year + 1):
             
             # JOIN ECO to POB
             
-            Pcul    = int(Pc_cul * Cul_ini_ha)
-            Pcaf    = int(Pc_caf * Caf_ini_ha)
-            Pgan    = int(Pg_cab * Gan_ini_cb)
-            tur     = int(tur_HaC * Caf_ini_ha)
-            Ptur    = int(P_tur * tur)
-            Pser    = int(Ps_P * Pob_ini_cb)
+            Pcul = int(Pc_cul * Cul_ini_ha)
+            Pcaf = int(Pc_caf * Caf_ini_ha)
+            Pgan = int(Pg_cab * Gan_ini_cb)
+            tur  = int(tur_HaC * Caf_ini_ha)
+            Ptur = int(P_tur * tur)
+            Pser = int(Ps_P * Pob_ini_cb)
             
             try:
                 PDR = (Pcul + Pcaf + Pgan + Ptur) / Pob_ini_ru
@@ -103,8 +104,11 @@ class MS_CienagaRioLaVieja():
             except:
                 PDU = 0
             
-            
-            PDES_lts.append((Pcul + Pcaf + Pgan + Ptur + Pser) / (Pob_ini_ru + Pob_ini_cb))
+            try:
+                PDES_lts.append((Pob_ini_ru + Pob_ini_cb - Pcul - Pcaf - Pgan - Ptur - Pser) / (Pob_ini_ru + Pob_ini_cb))
+            except:
+                PDES_lts.append(1)
+                
             ME_ru = Pru_IDR * PDR
             ME_cb = Pcb_IDU * PDU
             
@@ -118,7 +122,7 @@ class MS_CienagaRioLaVieja():
             Cul_het = self.RK4(init=Cul_het_ini_ha, h=1, fs=[T_CulHt/4, Tend_AreaCulHt], fun=self.dAc_dt)
             Cul_het = 0 if Cul_het <= 0 else Cul_het
             
-            Cul     = Cul_tra + Cul_per + Cul_het
+            Cul = Cul_tra + Cul_per + Cul_het
             
             # 4.2. Area de cultivo de cafe
             Caf = self.RK4(init=Caf_ini_ha, h=1, fs=[T_cafe/4, Tend_AreaCaf], fun=self.dAcafe_dt)
@@ -135,8 +139,8 @@ class MS_CienagaRioLaVieja():
             T_pas = Requerimie * ((G - Gan_ini_cb)/G) if G !=0 else 0
             
             # 4.4 Area values
-            A     = self.RK4(Pas_ini_ha, h=1, fs=[T_pas / 4], fun=self.dA_dt)
-            A     = 0 if A <= 0 else A
+            A = self.RK4(Pas_ini_ha, h=1, fs=[T_pas / 4], fun=self.dA_dt)
+            A = 0 if A <= 0 else A
             
             # 4.5. Poblacion Rural
             P_rul = self.RK4(init=Pob_ini_ru, h=1, fs=[T_cnat_rul/4., ME_ru], fun=self.dPob_dt)
@@ -197,6 +201,7 @@ class MS_CienagaRioLaVieja():
         # 8. RESET INDEX
         res.index = res['Ano']
         res.drop('Ano', axis=1, inplace=True)
+        
         return(res)
     
     def modelExtr(self):
@@ -239,8 +244,9 @@ class MS_CienagaRioLaVieja():
         
         self.res['Demanda total de agua'] = self.res['Demanda de agua - uso domestico'] + self.res['Demanda de agua - uso pecuario'] +\
                                             self.res['Demanda de agua - uso agricola'] + self.res['Demanda de agua - uso agricola - cafetero']
-
-
+        
+        return(None)
+    
     # MODELOS
     @staticmethod
     def dAcafe_dt(Acafe_ini, fs):
@@ -312,17 +318,17 @@ class MS_CienagaRioLaVieja():
     def dictionary(self):
         self.dict = {
             # PARAMETROS CALIBRADOS
-            'Tasa de crecimiento natural - Población rural' :0.04703153399809888,
-            'Tasa de crecimiento natural - Población cabecera' :0.028626771120128125,
+            'Tasa de crecimiento natural - Población rural' :0.4523786507420768,
+            'Tasa de crecimiento natural - Población cabecera' :0.046158964648240236,
             
             'Habitantes requeridos por cabeza de ganado' : 0.03170731707317073,
-            'Habitantes requeridos por ha de cultivos': 33.80543222041209,
-            'Habitantes requeridos por ha de cultivo de cafe': 24.21161908034496,
-            'Habitantes requeridos por el sector servicios': 17.264480067171707,
-            'Habitantes requeridos por el sector turistico': 18.892452232047308,
+            'Habitantes requeridos por ha de cultivos': 0.2567813901893124,
+            'Habitantes requeridos por ha de cultivo de cafe': 1.1717936636226582,
+            'Habitantes requeridos por el sector servicios': 0.6164363774925519,
+            'Habitantes requeridos por el sector turistico': 3.1387512963254247,
             
-            'Migracion rural atraida': -5.6313838608790805,
-            'Migracion cabecera atraida': 40.463430120186864,
+            'Migracion rural atraida': -4073.705495428765,
+            'Migracion cabecera atraida': -3156.063317267045,
             
             'Tasa de cambio del cultivo - Transitorio': 0.450155114,
             'Area tendencial del cultivo - Transitorio': 4917.606257,
@@ -344,7 +350,7 @@ class MS_CienagaRioLaVieja():
             'Ha de pasto requerido por el ganado': 1.122484651827749,
             'Ganado soportado por una ha de pasto': 2,
 
-            'Turistas atraidos por cada ha de cafe': 10.65612091,
+            'Turistas atraidos por cada ha de cafe': 2.01651863734517,
             
             # PARAMENTRO EXTRA
             'Peso en canal por cabeza de ganado' : 245.08,
@@ -404,23 +410,23 @@ class MS_CienagaRioLaVieja():
                                                       0.90, 0.90, 0.95,\
                                                       0.95, 0.95, 0.95],
             }
+        return(None)
     
     def example(self):
-        self.init_year = 2018
+        self.init_year = 2014
         self.end_year = 2050
-        
-        Pas_ini_ha = 70_163.13235
-        
-        Cul_tra_ini_ha = 3735.497386
-        Cul_per_ini_ha = 20140.88839
-        Cul_het_ini_ha = 32934.18232
-        
-        Caf_ini_ha = 31_001.44915
+
+        Pas_ini_ha = 70_163.1
+        Cul_tra_ini_ha = 3_295.490896
+        Cul_per_ini_ha = 18_525.14429
+        Cul_het_ini_ha = 38_156.24065
+        Caf_ini_ha = 31_001.4
         Gan_ini_cb = 113_781
+        
         Pob_ini_ru = 93_964
         Pob_ini_cb = 672_154
         
         self.res = self.model(Pas_ini_ha, 
                               Cul_tra_ini_ha, Cul_per_ini_ha, Cul_het_ini_ha,
                               Caf_ini_ha, Gan_ini_cb, Pob_ini_ru, Pob_ini_cb)
-        self.modelExtr()    
+        self.modelExtr()
