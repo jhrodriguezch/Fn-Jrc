@@ -1,0 +1,145 @@
+warning: LF will be replaced by CRLF in C_RioLaVieja/gui_MSCRV.ipynb.
+The file will have its original line endings in your working directory
+[1mdiff --git a/C_RioLaVieja/gui_MSCRV.ipynb b/C_RioLaVieja/gui_MSCRV.ipynb[m
+[1mindex 8db59a0..4faa2f6 100644[m
+[1m--- a/C_RioLaVieja/gui_MSCRV.ipynb[m
+[1m+++ b/C_RioLaVieja/gui_MSCRV.ipynb[m
+[36m@@ -12,7 +12,7 @@[m
+   },[m
+   {[m
+    "cell_type": "code",[m
+[31m-   "execution_count": null,[m
+[32m+[m[32m   "execution_count": 2,[m
+    "id": "2ce8c591",[m
+    "metadata": {},[m
+    "outputs": [],[m
+[36m@@ -35,7 +35,7 @@[m
+   },[m
+   {[m
+    "cell_type": "code",[m
+[31m-   "execution_count": null,[m
+[32m+[m[32m   "execution_count": 3,[m
+    "id": "513881d6",[m
+    "metadata": {},[m
+    "outputs": [],[m
+[36m@@ -45,7 +45,7 @@[m
+   },[m
+   {[m
+    "cell_type": "code",[m
+[31m-   "execution_count": 40,[m
+[32m+[m[32m   "execution_count": 4,[m
+    "id": "1500e7c7",[m
+    "metadata": {},[m
+    "outputs": [],[m
+[36m@@ -498,7 +498,7 @@[m
+   },[m
+   {[m
+    "cell_type": "code",[m
+[31m-   "execution_count": 41,[m
+[32m+[m[32m   "execution_count": 16,[m
+    "id": "aac9b43b",[m
+    "metadata": {},[m
+    "outputs": [],[m
+[36m@@ -532,17 +532,18 @@[m
+     "    ##############################################################\n",[m
+     "    ##############################################################\n",[m
+     "    \n",[m
+[31m-    "    model = MS_CienagaRioLaVieja(init_year= 2018, end_year = 2050)\n",[m
+[32m+[m[32m    "    model = MS_CienagaRioLaVieja(init_year= 2014, end_year = 2050)\n",[m
+     "\n",[m
+     "    # RUN SCENARY VALUES \n",[m
+[31m-    "    Pas_ini_ha = 71_453.4\n",[m
+[31m-    "    Cul_tra_ini_ha = 3_735.497386\n",[m
+[31m-    "    Cul_per_ini_ha = 20_140.88839\n",[m
+[31m-    "    Cul_het_ini_ha = 32_934.18232\n",[m
+[31m-    "    Caf_ini_ha = 29_887.3\n",[m
+[31m-    "    Gan_ini_cb = 121_466\n",[m
+[31m-    "    Pob_ini_ru = 92_797\n",[m
+[31m-    "    Pob_ini_cb = 696_046\n",[m
+[32m+[m[32m    "    Pas_ini_ha = 70_163.1\n",[m
+[32m+[m[32m    "    Cul_tra_ini_ha = 3_295.490896\n",[m
+[32m+[m[32m    "    Cul_per_ini_ha = 18_525.14429\n",[m
+[32m+[m[32m    "    Cul_het_ini_ha = 38_156.24065\n",[m
+[32m+[m[32m    "    Caf_ini_ha = 31_001.4\n",[m
+[32m+[m[32m    "    Gan_ini_cb = 113_781\n",[m
+[32m+[m[32m    "\n",[m
+[32m+[m[32m    "    Pob_ini_ru = 93_964\n",[m
+[32m+[m[32m    "    Pob_ini_cb = 672_154\n",[m
+     "    \n",[m
+     "    model.dict['Precipitacion media mensual multianual']=[p0, p1, p2, p3, p4, p5,\\\n",[m
+     "                                                          p6, p7, p8, p9, p10,p11]\n",[m
+[36m@@ -555,8 +556,8 @@[m
+     "    model.dict['Area tendencial del cultivo - Permanente'] = g2\n",[m
+     "    model.dict['Area tendencial del cultivo - Heterogeneo'] = g3\n",[m
+     "    \n",[m
+[31m-    "    model.dict['Rendimiento del cultivo de cafe'] = g4\n",[m
+[31m-    "    model.dict['Rendimiento agricola'] = g5\n",[m
+[32m+[m[32m    "    model.dict['Rendimiento del cultivo de cafe'] = g5\n",[m
+[32m+[m[32m    "    model.dict['Rendimiento agricola'] = g4\n",[m
+     "    \n",[m
+     "    model.dict['Precio del kilogramo cafe'] = g6\n",[m
+     "    model.dict['Precio de venta de la produccion agricola'] = g7\n",[m
+[36m@@ -765,7 +766,7 @@[m
+   },[m
+   {[m
+    "cell_type": "code",[m
+[31m-   "execution_count": null,[m
+[32m+[m[32m   "execution_count": 17,[m
+    "id": "ffcf1395",[m
+    "metadata": {},[m
+    "outputs": [],[m
+[36m@@ -775,7 +776,7 @@[m
+   },[m
+   {[m
+    "cell_type": "code",[m
+[31m-   "execution_count": 44,[m
+[32m+[m[32m   "execution_count": 18,[m
+    "id": "5da1162e",[m
+    "metadata": {},[m
+    "outputs": [],[m
+[36m@@ -785,8 +786,8 @@[m
+     "             'Área cult. transitorio final - Ha',\n",[m
+     "             'Área cult. permanente final - Ha',\n",[m
+     "             'Área cult. heterogeneo final - Ha',\n",[m
+[31m-    "             'Rendimiento promedio del cultivo de cafe - Ton/Ha/año',\n",[m
+     "             'Rendimiento promedio agricola - Ton/Ha/año',\n",[m
+[32m+[m[32m    "             'Rendimiento promedio del cultivo de cafe - Ton/Ha/año',\n",[m
+     "             'Precio del kilogramo cafe - COP/kg',\n",[m
+     "             'Precio de venta de la produccion agricola - COP/kg']\n",[m
+     "init_vals = [28213.886641980112,\n",[m
+[36m@@ -822,7 +823,7 @@[m
+   },[m
+   {[m
+    "cell_type": "code",[m
+[31m-   "execution_count": 45,[m
+[32m+[m[32m   "execution_count": 19,[m
+    "id": "cf52a9f1",[m
+    "metadata": {[m
+     "scrolled": false[m
+[36m@@ -838,7 +839,7 @@[m
+     {[m
+      "data": {[m
+       "application/vnd.jupyter.widget-view+json": {[m
+[31m-       "model_id": "d5454b14696c4079bcb28857a9c90925",[m
+[32m+[m[32m       "model_id": "34eee35785cb4262b66ec48260cdcefc",[m
+        "version_major": 2,[m
+        "version_minor": 0[m
+       },[m
+[36m@@ -855,7 +856,7 @@[m
+        "<function __main__.run(p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, g0, g1, g2, g3, g4, g5, g6, g7)>"[m
+       ][m
+      },[m
+[31m-     "execution_count": 45,[m
+[32m+[m[32m     "execution_count": 19,[m
+      "metadata": {},[m
+      "output_type": "execute_result"[m
+     }[m
+[36m@@ -881,7 +882,7 @@[m
+   },[m
+   {[m
+    "cell_type": "code",[m
+[31m-   "execution_count": 9,[m
+[32m+[m[32m   "execution_count": null,[m
+    "id": "c86b267a",[m
+    "metadata": {},[m
+    "outputs": [],[m
