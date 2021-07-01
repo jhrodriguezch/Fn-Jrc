@@ -78,6 +78,7 @@ class Main:
         mesa_veda = self.dict['Meses con periodos de veda']
         cab_ha_max = self.dict['Maximo numero de cabezas de ganado por ha']
         max_cul = self.dict['Maxima area de cultivos ha']
+        efec_pesca = self.dict['Efecto sobre la captura de peces']
 
         # BUILD LIST OF DATAFRAME
         apas_list: list[float] = [init_apas]
@@ -108,12 +109,11 @@ class Main:
             apas = 0.0 if apas <= 0.0 else apas
 
             # GANADO
-            ganb: int = int(
-                rk4(init=init_ganb, h=1, fs=[tcrecbov / 4., tsacribov / 4., cab_ha_max * apas], fun=self.dg_dt))
+            ganb: int = int(rk4(init=init_ganb, h=1, fs=[tcrecbov / 4., tsacribov / 4., cab_ha_max*apas], fun=self.dg_dt))
             ganb = 0 if ganb <= 0 else ganb
 
             # CULTIVOS
-            acul: float = rk4(init=init_acul, h=1, fs=[tcambioculti / 4.], fun=self.df_dt)
+            acul: float = rk4(init=init_acul, h=1, fs=[tcambioculti / 4., max_cul], fun=self.dc_dt)
             acul = 0. if acul <= 0. else acul
             acul = min(max_cul, acul)
 
@@ -137,10 +137,10 @@ class Main:
             pob_desempleadad: int = pob_dispo
 
             # PESCA
-            pesca_red = self.pesca_red(pob_pes, mesa_veda)
-            pesca_atarralla = self.pesca_ata(pob_pes, mesa_veda)
-            pesca_chinchorro = self.pesca_chin(pob_pes, mesa_veda)
-            pesca_nasas = self.pesca_nasa(pob_pes, mesa_veda)
+            pesca_red = self.pesca_red(pob_pes, mesa_veda, efec_pesca[0])
+            pesca_atarralla = self.pesca_ata(pob_pes, mesa_veda, efec_pesca[1])
+            pesca_chinchorro = self.pesca_chin(pob_pes, mesa_veda, efec_pesca[2])
+            pesca_nasas = self.pesca_nasa(pob_pes, mesa_veda, efec_pesca[3])
 
             # STOCK PESQUERO
             pesca = list(np.array(pesca_red) +
@@ -205,7 +205,7 @@ class Main:
 
     # MAIN METHODS (MODELOS)
     @staticmethod
-    def pesca_nasa(pob, mesa_veda):
+    def pesca_nasa(pob, mesa_veda, f):
         # Caquetaia kraussii - Mojara amarillo
         # Cyphocharax magdalenae - Chango
         # Oreochromis niloticus - Mojarra Tilapía, cachama tilapia
@@ -233,10 +233,10 @@ class Main:
         res = m * pob + b
 
         res[res <= 0] = 0
-        return list(res * (12 - mesa_veda) / 12)
+        return list(res * f * (12 - mesa_veda) / 12)
 
     @staticmethod
-    def pesca_chin(pob, mesa_veda):
+    def pesca_chin(pob, mesa_veda, f):
         # Caquetaia kraussii - Mojara amarilla
         # Cyphocharax magdalenae - Chango
         # Oreochromis niloticus - Mojarra Tilapía, cachama tilapia
@@ -263,10 +263,10 @@ class Main:
 
         res = m * pob + b
         res[res <= 0] = 0
-        return list(res * (12 - mesa_veda) / 12)
+        return list(res * f * (12 - mesa_veda) / 12)
 
     @staticmethod
-    def pesca_ata(pob, mesa_veda):
+    def pesca_ata(pob, mesa_veda, f):
         # Caquetaia kraussii - Mojara amarilla
         # Cyphocharax magdalenae - Chango
         # Oreochromis niloticus - Mojarra Tilapía, cachama tilapia
@@ -293,10 +293,10 @@ class Main:
 
         res = m * pob + b
         res[res <= 0] = 0
-        return list(res * (12 - mesa_veda) / 12)
+        return list(res * f * (12 - mesa_veda) / 12)
 
     @staticmethod
-    def pesca_red(pob, mesa_veda):
+    def pesca_red(pob, mesa_veda, f):
         # Caquetaia kraussii - Mojara amarilla
         # Cyphocharax magdalenae - Chango
         # Oreochromis niloticus - Mojarra Tilapía, cachama tilapia
@@ -323,7 +323,7 @@ class Main:
 
         res = m * pob + b
         res[res <= 0] = 0
-        return list(res * (12 - mesa_veda) / 12)
+        return list(res * f * (12 - mesa_veda) / 12)
 
     @staticmethod
     def df_dt(init, fs):
@@ -338,20 +338,29 @@ class Main:
         INIT: Valor inicial
         FS  : Fuente-sumidero : [Tasa de cambio]"""
         return init * fs[0] + fs[1]
-
+    
+    @staticmethod
+    def dc_dt(init, fs):
+        """METHOD CHANGE WITH TENDENCY VALUE
+        INIT: Valor inicial
+        FS  : Fuente-sumidero : [Tasa de cambio]"""
+        c = init * fs[0] *(1 - init/fs[1])
+        c = 0 if fs[1] == 0 else c
+        return c
+    
     @staticmethod
     def dg_dt(init, fs):
         """METHOD CHANGE WITH TENDENCY VALUE
         INIT: Valor inicial
         FS  : Fuente-sumidero : [Tasa de cambio]"""
-        g = init * (fs[0] - fs[1]) * (1 - init / fs[2])
+        g = init * (fs[0] - fs[1])*(1 - init/fs[2])
         g = 0 if fs[2] == 0 else g
         return g
 
     def dspesque_dt(self, init: list, tasa: list, pesca: list):
         dspesque_dt = []
         for init_val, tasa_val, pesca_val in zip(init, tasa, pesca):
-            tmp_value = rk4(init=init_val, h=1, fs=[tasa_val, -1 * pesca_val], fun=self.df2_dt)
+            tmp_value = rk4(init=init_val, h=1, fs=[tasa_val, -1*pesca_val], fun=self.df2_dt)
             tmp_value = 0. if tmp_value <= 0. else tmp_value
             dspesque_dt.append(tmp_value)
         return dspesque_dt
@@ -375,7 +384,7 @@ class Main:
 
             'Area de la cienaga la Zapatosa (km2)': 492.403913053385,
 
-            'Habitantes contratados por cada bovino': 910_000 / 27_000_000,
+            'Habitantes contratados por cada bovino': 910_000/27_000_000,
             'Habitantes contratados por cada ha de cultivo': 0.01018781635734325,
             'Porcentaje de la poblacion que son pescadores por falta de otro empleo': 0.8492435271711207,
 
@@ -404,16 +413,20 @@ class Main:
 
             'Porcentaje de autoconsumo agricola': 0.37620352128186463,
             'Porcentaje de autoconsumo ganadero': 0.08585747030620694,
-            'Porcentaje de autoconsumo pesquero': [0.125,
-                                                   0.000,
-                                                   0.000,
-                                                   0.125,
-                                                   0.15125,
-                                                   0.000,
-                                                   0.000],
-            'Meses con periodos de veda': 0,
+            'Porcentaje de autoconsumo pesquero':[0.125,
+                                                  0.000,
+                                                  0.000,
+                                                  0.125,
+                                                  0.15125,
+                                                  0.000,
+                                                  0.000],
+            'Meses con periodos de veda' : 0,
             'Maximo numero de cabezas de ganado por ha': 7,
-            'Maxima area de cultivos ha': 643311.31019
+            'Maxima area de cultivos ha': 643311.31019,
+            'Efecto sobre la captura de peces':[1,
+                                                1,
+                                                1,
+                                                1]
         }
 
     def example(self):
