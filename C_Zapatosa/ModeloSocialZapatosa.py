@@ -73,8 +73,11 @@ class Main:
         tcrecimientopob = self.dict['Diferencia entre la tasa de natalidad y mortalidad poblacional']
         hab_gan = self.dict['Habitantes contratados por cada bovino']
         hab_hac = self.dict['Habitantes contratados por cada ha de cultivo']
-        porc_hab_pes = self.dict['Porcentaje de la poblacion que son pescadores']
+        porc_hab_pes = self.dict['Porcentaje de la poblacion que son pescadores por falta de otro empleo']
         porc_hab_emigra = self.dict['Porcentaje de habitantes emigrantes anuales']
+        mesa_veda = self.dict['Meses con periodos de veda']
+        cab_ha_max = self.dict['Maximo numero de cabezas de ganado por ha']
+        max_cul = self.dict['Maxima area de cultivos ha']
 
         # BUILD LIST OF DATAFRAME
         apas_list: list[float] = [init_apas]
@@ -105,12 +108,14 @@ class Main:
             apas = 0.0 if apas <= 0.0 else apas
 
             # GANADO
-            ganb: int = int(rk4(init=init_ganb, h=1, fs=[tcrecbov / 4., tsacribov / 4.], fun=self.df_dt))
+            ganb: int = int(
+                rk4(init=init_ganb, h=1, fs=[tcrecbov / 4., tsacribov / 4., cab_ha_max * apas], fun=self.dg_dt))
             ganb = 0 if ganb <= 0 else ganb
 
             # CULTIVOS
             acul: float = rk4(init=init_acul, h=1, fs=[tcambioculti / 4.], fun=self.df_dt)
             acul = 0. if acul <= 0. else acul
+            acul = min(max_cul, acul)
 
             # POBLACION
             pob: int = int(rk4(init=init_pob, h=1, fs=[tcrecimientopob, migra_emigra], fun=self.df2_dt))
@@ -132,10 +137,10 @@ class Main:
             pob_desempleadad: int = pob_dispo
 
             # PESCA
-            pesca_red = self.pesca_red(pob_pes)
-            pesca_atarralla = self.pesca_ata(pob_pes)
-            pesca_chinchorro = self.pesca_chin(pob_pes)
-            pesca_nasas = self.pesca_nasa(pob_pes)
+            pesca_red = self.pesca_red(pob_pes, mesa_veda)
+            pesca_atarralla = self.pesca_ata(pob_pes, mesa_veda)
+            pesca_chinchorro = self.pesca_chin(pob_pes, mesa_veda)
+            pesca_nasas = self.pesca_nasa(pob_pes, mesa_veda)
 
             # STOCK PESQUERO
             pesca = list(np.array(pesca_red) +
@@ -200,7 +205,7 @@ class Main:
 
     # MAIN METHODS (MODELOS)
     @staticmethod
-    def pesca_nasa(pob):
+    def pesca_nasa(pob, mesa_veda):
         # Caquetaia kraussii - Mojara amarillo
         # Cyphocharax magdalenae - Chango
         # Oreochromis niloticus - Mojarra Tilapía, cachama tilapia
@@ -228,10 +233,10 @@ class Main:
         res = m * pob + b
 
         res[res <= 0] = 0
-        return list(res)
+        return list(res * (12 - mesa_veda) / 12)
 
     @staticmethod
-    def pesca_chin(pob):
+    def pesca_chin(pob, mesa_veda):
         # Caquetaia kraussii - Mojara amarilla
         # Cyphocharax magdalenae - Chango
         # Oreochromis niloticus - Mojarra Tilapía, cachama tilapia
@@ -258,10 +263,10 @@ class Main:
 
         res = m * pob + b
         res[res <= 0] = 0
-        return list(res)
+        return list(res * (12 - mesa_veda) / 12)
 
     @staticmethod
-    def pesca_ata(pob):
+    def pesca_ata(pob, mesa_veda):
         # Caquetaia kraussii - Mojara amarilla
         # Cyphocharax magdalenae - Chango
         # Oreochromis niloticus - Mojarra Tilapía, cachama tilapia
@@ -288,10 +293,10 @@ class Main:
 
         res = m * pob + b
         res[res <= 0] = 0
-        return list(res)
+        return list(res * (12 - mesa_veda) / 12)
 
     @staticmethod
-    def pesca_red(pob):
+    def pesca_red(pob, mesa_veda):
         # Caquetaia kraussii - Mojara amarilla
         # Cyphocharax magdalenae - Chango
         # Oreochromis niloticus - Mojarra Tilapía, cachama tilapia
@@ -318,7 +323,7 @@ class Main:
 
         res = m * pob + b
         res[res <= 0] = 0
-        return list(res)
+        return list(res * (12 - mesa_veda) / 12)
 
     @staticmethod
     def df_dt(init, fs):
@@ -329,15 +334,24 @@ class Main:
 
     @staticmethod
     def df2_dt(init, fs):
-        """METHOD CHANGE WITH ONE VALUE IN FS
+        """METHOD CHANGE WITH TWO VALUE IN FS
         INIT: Valor inicial
         FS  : Fuente-sumidero : [Tasa de cambio]"""
         return init * fs[0] + fs[1]
 
+    @staticmethod
+    def dg_dt(init, fs):
+        """METHOD CHANGE WITH TENDENCY VALUE
+        INIT: Valor inicial
+        FS  : Fuente-sumidero : [Tasa de cambio]"""
+        g = init * (fs[0] - fs[1]) * (1 - init / fs[2])
+        g = 0 if fs[2] == 0 else g
+        return g
+
     def dspesque_dt(self, init: list, tasa: list, pesca: list):
         dspesque_dt = []
         for init_val, tasa_val, pesca_val in zip(init, tasa, pesca):
-            tmp_value = rk4(init=init_val, h=1, fs=[tasa_val, -1*pesca_val], fun=self.df2_dt)
+            tmp_value = rk4(init=init_val, h=1, fs=[tasa_val, -1 * pesca_val], fun=self.df2_dt)
             tmp_value = 0. if tmp_value <= 0. else tmp_value
             dspesque_dt.append(tmp_value)
         return dspesque_dt
@@ -345,8 +359,8 @@ class Main:
     @staticmethod
     def fun_preciopesca(pesca, precio, aut):
         res: list = []
-        for ii, aut_i in zip(pesca.to_list(), aut):
-            precio_sum: float = np.nansum(np.array(ii) * np.array(precio)) * (1 - aut_i)
+        for ii in pesca.to_list():
+            precio_sum: float = np.nansum(np.array(ii) * np.array(precio) * np.array(aut))
             res.append(precio_sum)
         return res
 
@@ -361,9 +375,9 @@ class Main:
 
             'Area de la cienaga la Zapatosa (km2)': 492.403913053385,
 
-            'Habitantes contratados por cada bovino': 910_000/27_000_000,
+            'Habitantes contratados por cada bovino': 910_000 / 27_000_000,
             'Habitantes contratados por cada ha de cultivo': 0.01018781635734325,
-            'Porcentaje de la poblacion que son pescadores': 0.8492435271711207,
+            'Porcentaje de la poblacion que son pescadores por falta de otro empleo': 0.8492435271711207,
 
             'Tasa de cambio del stock pesquero': [0.0013753964080707587,
                                                   0.004227420167232215,
@@ -390,13 +404,16 @@ class Main:
 
             'Porcentaje de autoconsumo agricola': 0.37620352128186463,
             'Porcentaje de autoconsumo ganadero': 0.08585747030620694,
-            'Porcentaje de autoconsumo pesquero':[0.125,
-                                                  0.000,
-                                                  0.000,
-                                                  0.125,
-                                                  0.15125,
-                                                  0.000,
-                                                  0.000]
+            'Porcentaje de autoconsumo pesquero': [0.125,
+                                                   0.000,
+                                                   0.000,
+                                                   0.125,
+                                                   0.15125,
+                                                   0.000,
+                                                   0.000],
+            'Meses con periodos de veda': 0,
+            'Maximo numero de cabezas de ganado por ha': 7,
+            'Maxima area de cultivos ha': 643311.31019
         }
 
     def example(self):
@@ -405,7 +422,7 @@ class Main:
         :return:
         VALORES RESULTADOS DEL MODELO CALIBRADO
         ---
-        ESCECIES:
+        ESPECIES:
         ---
         Caquetaia kraussii - Mojara amarilla
         Cyphocharax magdalenae - Chango
@@ -418,7 +435,7 @@ class Main:
         init_apas: float = 46_761.910190
         init_ganb: int = 236_038
         init_pob: int = 175_175
-        init_acul: float = 596549.4271
+        init_acul: float = 59_654.94271
         init_stokpes: list = [260.5772251,
                               171.9777471,
                               126.2344273,
