@@ -8,3 +8,5 @@ https://mybinder.org/v2/gh/jhrodriguezch/Fn-Jrc/main?filepath=%2FC_Ayapel%2Fgui_
 
 Clasic version:
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jhrodriguezch/Fn-Jrc/main?filepath=%2FC_Ayapel%2Fgui_CAyapel.ipynb)
+
+Recuerde hacer clik en la parte superior en el boton **cell** y posteriormente en **Run All**

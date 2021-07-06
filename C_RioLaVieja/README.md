@@ -8,3 +8,5 @@ https://mybinder.org/v2/gh/jhrodriguezch/Fn-Jrc/main?filepath=%2FC_RioLaVieja%2F
 
 Clasic version:
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jhrodriguezch/Fn-Jrc/main?filepath=%2FC_RioLaVieja%2Fgui_MSCRV.ipynb)
+
+Recuerde hacer clik en la parte superior en el boton **cell** y posteriormente en **Run All**
